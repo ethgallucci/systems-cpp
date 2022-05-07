@@ -41,13 +41,12 @@ Operations* make_ops(std::tuple<Operator, Operator, Operator> const& ops) {
   Operations new_ops = {
       std::get<0>(ops),
       std::get<1>(ops),
-      std::get<2>(ops),
   };
   return &new_ops;
 }
 
 inline void print_ops(Operations const& ops) {
-  for (unsigned i = 0; i < 3; i++) {
+  for (unsigned i = 0; i < 2; i++) {
     std::cout << switch_on_operator(ops[i]) << std::endl;
   }
 }
