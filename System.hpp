@@ -1,3 +1,7 @@
+/*
+Defines a simple, two-var system of equations
+*/
+
 #ifndef SYSTEM_HPP
 #define SYSTEM_HPP
 
@@ -6,41 +10,74 @@
 #include <stdint.h>
 #include <vector>
 
+enum Operator {
+  Plus,
+  Minus,
+  Mul,
+  Div,
+  Square,
+};
+
+inline char switch_on_operator(Operator const& op) {
+  switch (op) {
+  case Plus:
+    return '+';
+  case Minus:
+    return '-';
+  case Mul:
+    return '*';
+  case Div:
+    return '/';
+  case Square:
+    return '^';
+  }
+}
+
 namespace matrix {
-typedef int32_t Transposition[3][4];
-typedef char Operations[3][2];
+typedef int32_t Transposition[2][3];
+typedef Operator Operations[3];
+
+Operations* make_ops(std::tuple<Operator, Operator, Operator> const& ops) {
+  Operations new_ops = {
+      std::get<0>(ops),
+      std::get<1>(ops),
+      std::get<2>(ops),
+  };
+  return &new_ops;
+}
 
 inline void print_ops(Operations const& ops) {
-  std::cout << "OPS:";
-  for (unsigned i = 0; i <= 2; i++) {
-    std::cout << '\n';
-    for (unsigned j = 0; j <= 1; j++) {
-      std::cout << ops[i][j] << ", ";
-    }
+  for (unsigned i = 0; i < 3; i++) {
+    std::cout << switch_on_operator(ops[i]) << std::endl;
   }
-  std::cout << std::endl;
 }
+
 } // namespace matrix
 
 namespace systems {
 /// \brief A system's coefficients
-typedef std::vector<std::tuple<int32_t, int32_t, int32_t>> Coeff;
+typedef std::vector<std::tuple<int32_t, int32_t>> Coeff;
 
-inline void print_coeffs(Coeff const& coeffs) {
-  std::cout << "COEFF:\n";
+/// \brief A generic tuple of three system variables
+/// \note Can be used to hold all row solutions, system solutions, or unkowns
+typedef std::tuple<int32_t, int32_t> VarBatch;
+
+inline void sysprint(Coeff const& coeffs, matrix::Operations const& ops,
+                     VarBatch const& rowsolns) {
+  std::cout << "COEFF:\t\t"
+            << "SOLN:\n";
+  unsigned i = 0;
   for (auto c : coeffs) {
     std::cout << std::get<0>(c) << "x  ";
-    std::cout << std::get<1>(c) << "y  ";
-    std::cout << std::get<2>(c) << "z  ";
+    std::cout << switch_on_operator(ops[i]) << "  ";
+    std::cout << std::get<1>(c) << "y  \t\t";
     std::cout << '\n';
+    i++;
   }
   std::cout << std::endl;
 }
 
-/// \brief A generic tuple of three system variables
-/// \note Can be used to hold all row solutions, system solutions, or unkowns
-typedef std::tuple<int32_t, int32_t, int32_t> VarBatch;
-
+/// \brief Defines a Two-var System of Equations
 typedef struct System {
 private:
   Coeff coefficients;
@@ -57,7 +94,7 @@ public:
   }
 
   inline void print() {
-    print_coeffs(this->coefficients);
+    sysprint(this->coefficients, this->operations, this->row_soln);
     matrix::print_ops(this->operations);
   }
 };
